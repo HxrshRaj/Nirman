@@ -1,0 +1,225 @@
+{
+  "entry": "index.jsx",
+  "nodes": [
+    {
+      "id": "index.jsx",
+      "kind": "jsx",
+      "inCycle": false,
+      "isEntry": true
+    },
+    {
+      "id": "../node_modules/react/index.js",
+      "kind": "js",
+      "inCycle": false,
+      "isEntry": false
+    },
+    {
+      "id": "../node_modules/react-dom/client.js",
+      "kind": "js",
+      "inCycle": false,
+      "isEntry": false
+    },
+    {
+      "id": "App.jsx",
+      "kind": "jsx",
+      "inCycle": false,
+      "isEntry": false
+    },
+    {
+      "id": "../node_modules/react/cjs/react.production.min.js",
+      "kind": "js",
+      "inCycle": false,
+      "isEntry": false
+    },
+    {
+      "id": "../node_modules/react/cjs/react.development.js",
+      "kind": "js",
+      "inCycle": false,
+      "isEntry": false
+    },
+    {
+      "id": "../node_modules/react-dom/index.js",
+      "kind": "js",
+      "inCycle": false,
+      "isEntry": false
+    },
+    {
+      "id": "components/Header.jsx",
+      "kind": "jsx",
+      "inCycle": false,
+      "isEntry": false
+    },
+    {
+      "id": "components/TaskList.jsx",
+      "kind": "jsx",
+      "inCycle": false,
+      "isEntry": false
+    },
+    {
+      "id": "api.js",
+      "kind": "js",
+      "inCycle": false,
+      "isEntry": false
+    },
+    {
+      "id": "app.css",
+      "kind": "css",
+      "inCycle": false,
+      "isEntry": false
+    },
+    {
+      "id": "../node_modules/react-dom/cjs/react-dom.production.min.js",
+      "kind": "js",
+      "inCycle": false,
+      "isEntry": false
+    },
+    {
+      "id": "../node_modules/react-dom/cjs/react-dom.development.js",
+      "kind": "js",
+      "inCycle": false,
+      "isEntry": false
+    },
+    {
+      "id": "components/TaskItem.jsx",
+      "kind": "jsx",
+      "inCycle": false,
+      "isEntry": false
+    },
+    {
+      "id": "../node_modules/scheduler/index.js",
+      "kind": "js",
+      "inCycle": false,
+      "isEntry": false
+    },
+    {
+      "id": "../node_modules/scheduler/cjs/scheduler.production.min.js",
+      "kind": "js",
+      "inCycle": false,
+      "isEntry": false
+    },
+    {
+      "id": "../node_modules/scheduler/cjs/scheduler.development.js",
+      "kind": "js",
+      "inCycle": false,
+      "isEntry": false
+    }
+  ],
+  "edges": [
+    {
+      "from": "index.jsx",
+      "to": "../node_modules/react/index.js",
+      "specifier": "react"
+    },
+    {
+      "from": "index.jsx",
+      "to": "../node_modules/react-dom/client.js",
+      "specifier": "react-dom/client"
+    },
+    {
+      "from": "index.jsx",
+      "to": "App.jsx",
+      "specifier": "./App"
+    },
+    {
+      "from": "../node_modules/react/index.js",
+      "to": "../node_modules/react/cjs/react.production.min.js",
+      "specifier": "./cjs/react.production.min.js"
+    },
+    {
+      "from": "../node_modules/react/index.js",
+      "to": "../node_modules/react/cjs/react.development.js",
+      "specifier": "./cjs/react.development.js"
+    },
+    {
+      "from": "../node_modules/react-dom/client.js",
+      "to": "../node_modules/react-dom/index.js",
+      "specifier": "react-dom"
+    },
+    {
+      "from": "App.jsx",
+      "to": "../node_modules/react/index.js",
+      "specifier": "react"
+    },
+    {
+      "from": "App.jsx",
+      "to": "components/Header.jsx",
+      "specifier": "./components/Header"
+    },
+    {
+      "from": "App.jsx",
+      "to": "components/TaskList.jsx",
+      "specifier": "./components/TaskList"
+    },
+    {
+      "from": "App.jsx",
+      "to": "api.js",
+      "specifier": "./api"
+    },
+    {
+      "from": "App.jsx",
+      "to": "app.css",
+      "specifier": "./app.css"
+    },
+    {
+      "from": "../node_modules/react-dom/index.js",
+      "to": "../node_modules/react-dom/cjs/react-dom.production.min.js",
+      "specifier": "./cjs/react-dom.production.min.js"
+    },
+    {
+      "from": "../node_modules/react-dom/index.js",
+      "to": "../node_modules/react-dom/cjs/react-dom.development.js",
+      "specifier": "./cjs/react-dom.development.js"
+    },
+    {
+      "from": "components/Header.jsx",
+      "to": "../node_modules/react/index.js",
+      "specifier": "react"
+    },
+    {
+      "from": "components/TaskList.jsx",
+      "to": "../node_modules/react/index.js",
+      "specifier": "react"
+    },
+    {
+      "from": "components/TaskList.jsx",
+      "to": "components/TaskItem.jsx",
+      "specifier": "./TaskItem"
+    },
+    {
+      "from": "../node_modules/react-dom/cjs/react-dom.production.min.js",
+      "to": "../node_modules/react/index.js",
+      "specifier": "react"
+    },
+    {
+      "from": "../node_modules/react-dom/cjs/react-dom.production.min.js",
+      "to": "../node_modules/scheduler/index.js",
+      "specifier": "scheduler"
+    },
+    {
+      "from": "../node_modules/react-dom/cjs/react-dom.development.js",
+      "to": "../node_modules/react/index.js",
+      "specifier": "react"
+    },
+    {
+      "from": "../node_modules/react-dom/cjs/react-dom.development.js",
+      "to": "../node_modules/scheduler/index.js",
+      "specifier": "scheduler"
+    },
+    {
+      "from": "components/TaskItem.jsx",
+      "to": "../node_modules/react/index.js",
+      "specifier": "react"
+    },
+    {
+      "from": "../node_modules/scheduler/index.js",
+      "to": "../node_modules/scheduler/cjs/scheduler.production.min.js",
+      "specifier": "./cjs/scheduler.production.min.js"
+    },
+    {
+      "from": "../node_modules/scheduler/index.js",
+      "to": "../node_modules/scheduler/cjs/scheduler.development.js",
+      "specifier": "./cjs/scheduler.development.js"
+    }
+  ],
+  "cycles": []
+}
