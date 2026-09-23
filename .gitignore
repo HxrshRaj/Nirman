@@ -1,0 +1,9 @@
+/node_modules/
+/demo-app/node_modules/
+dist/
+*.log
+.DS_Store
+.nirman-cache/
+
+# NOTE: test-projects/graph-demo/node_modules/left-pad is a deliberate, tiny, committed
+# fixture used to verify node_modules resolution — it is intentionally NOT ignored.

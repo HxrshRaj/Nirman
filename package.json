@@ -1,0 +1,29 @@
+{
+  "name": "nirman",
+  "version": "0.1.0",
+  "description": "A JavaScript build tool built from scratch: module resolver, transformer, bundler, and dev server with real HMR.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "acorn": "^8.18.0",
+    "acorn-jsx": "^5.3.2",
+    "acorn-walk": "^8.3.5",
+    "chokidar": "^5.0.0",
+    "magic-string": "^1.4.1",
+    "mime-types": "^3.0.2",
+    "source-map": "^0.8.0",
+    "ws": "^8.21.3"
+  },
+  "devDependencies": {
+    "@types/mime-types": "^3.0.1",
+    "@types/node": "^26.6.2",
+    "@types/ws": "^8.18.1",
+    "typescript": "^5.6.3"
+  }
+}
