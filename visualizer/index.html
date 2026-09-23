@@ -1,0 +1,164 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Nirman Dependency Graph</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; font-family: -apple-system, Segoe UI, Roboto, sans-serif; background: #0f1117; color: #e6e6e6; }
+  #app { display: flex; flex-direction: column; height: 100%; }
+  header { padding: 14px 20px; border-bottom: 1px solid #262a35; }
+  header h1 { margin: 0 0 4px; font-size: 18px; }
+  header p { margin: 0; font-size: 13px; color: #9aa0ac; }
+  #stage { flex: 1; position: relative; overflow: hidden; }
+  svg { width: 100%; height: 100%; display: block; }
+  .link { stroke: #4a5568; stroke-opacity: 0.6; }
+  .link.cycle { stroke: #ff6767; stroke-opacity: 0.9; stroke-width: 2px; }
+  .node circle { stroke: #0f1117; stroke-width: 1.5px; cursor: grab; }
+  .node text { font-size: 10px; fill: #dfe3ea; pointer-events: none; }
+  .node.entry circle { stroke: #ffd43b; stroke-width: 3px; }
+  .node.cycle circle { stroke: #ff6767; stroke-width: 2.5px; }
+  .legend { position: absolute; top: 12px; right: 16px; background: rgba(20,22,30,0.85); border: 1px solid #262a35; border-radius: 8px; padding: 10px 14px; font-size: 12px; line-height: 1.6; }
+  .legend .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+  .empty { padding: 40px; color: #9aa0ac; }
+  #tooltip { position: absolute; pointer-events: none; background: #1c1f28; border: 1px solid #333844; border-radius: 6px; padding: 6px 10px; font-size: 12px; display: none; max-width: 320px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>Nirman Dependency Graph</h1>
+    <p id="subtitle">Loading graph.json produced by Nirman's own resolver...</p>
+  </header>
+  <div id="stage">
+    <div class="legend">
+      <div><span class="swatch" style="background:#4dabf7"></span>js/jsx</div>
+      <div><span class="swatch" style="background:#f6a35c"></span>ts/tsx</div>
+      <div><span class="swatch" style="background:#82d67a"></span>css</div>
+      <div><span class="swatch" style="background:#c58af9"></span>json</div>
+      <div style="margin-top:6px;">gold ring = entry module</div>
+      <div>red ring/edge = circular dependency</div>
+    </div>
+    <div id="tooltip"></div>
+  </div>
+</div>
+<script>
+const KIND_COLOR = { js: '#4dabf7', jsx: '#4dabf7', ts: '#f6a35c', tsx: '#f6a35c', css: '#82d67a', json: '#c58af9' };
+
+async function main() {
+  const params = new URLSearchParams(location.search);
+  const src = params.get('graph') || './graph.json';
+  let data;
+  try {
+    data = await fetch(src).then((r) => r.json());
+  } catch (e) {
+    document.getElementById('stage').innerHTML = '<p class="empty">Could not load ' + src + '</p>';
+    return;
+  }
+
+  document.getElementById('subtitle').textContent =
+    data.nodes.length + ' modules, ' + data.edges.length + ' edges, ' + data.cycles.length + ' circular dependency group(s) -- entry: ' + data.entry;
+
+  const width = document.getElementById('stage').clientWidth;
+  const height = document.getElementById('stage').clientHeight;
+
+  const svg = d3.select('#stage').append('svg');
+  const g = svg.append('g');
+
+  svg.call(
+    d3.zoom().scaleExtent([0.2, 4]).on('zoom', (event) => {
+      g.attr('transform', event.transform);
+    })
+  );
+
+  const cycleIds = new Set(data.cycles.flat());
+  const cycleEdgeKey = new Set();
+  for (const cyc of data.cycles) {
+    for (const a of cyc) for (const b of cyc) if (a !== b) cycleEdgeKey.add(a + '->' + b);
+  }
+
+  const nodeById = new Map(data.nodes.map((n) => [n.id, n]));
+  const links = data.edges
+    .filter((e) => nodeById.has(e.from) && nodeById.has(e.to))
+    .map((e) => ({ source: e.from, target: e.to, specifier: e.specifier, cycle: cycleEdgeKey.has(e.from + '->' + e.to) }));
+
+  const simulation = d3
+    .forceSimulation(data.nodes)
+    .force('link', d3.forceLink(links).id((d) => d.id).distance(90).strength(0.6))
+    .force('charge', d3.forceManyBody().strength(-220))
+    .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('collide', d3.forceCollide(26));
+
+  const link = g
+    .append('g')
+    .selectAll('line')
+    .data(links)
+    .join('line')
+    .attr('class', (d) => 'link' + (d.cycle ? ' cycle' : ''));
+
+  const node = g
+    .append('g')
+    .selectAll('g')
+    .data(data.nodes)
+    .join('g')
+    .attr('class', (d) => 'node' + (d.isEntry ? ' entry' : '') + (d.inCycle ? ' cycle' : ''))
+    .call(
+      d3
+        .drag()
+        .on('start', (event, d) => {
+          if (!event.active) simulation.alphaTarget(0.3).restart();
+          d.fx = d.x;
+          d.fy = d.y;
+        })
+        .on('drag', (event, d) => {
+          d.fx = event.x;
+          d.fy = event.y;
+        })
+        .on('end', (event, d) => {
+          if (!event.active) simulation.alphaTarget(0);
+          d.fx = null;
+          d.fy = null;
+        })
+    );
+
+  node
+    .append('circle')
+    .attr('r', (d) => (d.isEntry ? 12 : 8))
+    .attr('fill', (d) => KIND_COLOR[d.kind] || '#888');
+
+  node
+    .append('text')
+    .attr('x', 12)
+    .attr('y', 4)
+    .text((d) => d.id.split('/').pop());
+
+  const tooltip = document.getElementById('tooltip');
+  node
+    .on('mouseenter', (event, d) => {
+      tooltip.style.display = 'block';
+      tooltip.style.left = event.pageX + 12 + 'px';
+      tooltip.style.top = event.pageY + 8 + 'px';
+      tooltip.innerHTML = '<b>' + d.id + '</b><br/>kind: ' + d.kind + (d.inCycle ? '<br/><span style="color:#ff6767">part of a circular dependency</span>' : '');
+    })
+    .on('mousemove', (event) => {
+      tooltip.style.left = event.pageX + 12 + 'px';
+      tooltip.style.top = event.pageY + 8 + 'px';
+    })
+    .on('mouseleave', () => {
+      tooltip.style.display = 'none';
+    });
+
+  simulation.on('tick', () => {
+    link
+      .attr('x1', (d) => d.source.x)
+      .attr('y1', (d) => d.source.y)
+      .attr('x2', (d) => d.target.x)
+      .attr('y2', (d) => d.target.y);
+    node.attr('transform', (d) => 'translate(' + d.x + ',' + d.y + ')');
+  });
+}
+
+main();
+</script>
+</body>
+</html>

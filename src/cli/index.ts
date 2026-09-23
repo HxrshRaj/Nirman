@@ -52,6 +52,40 @@ function main(): void {
     return;
   }
 
+  if (cmd === 'graph-json') {
+    const entry = path.resolve(rest[0] ?? '');
+    const outIdx = rest.indexOf('--out');
+    const outFile = outIdx !== -1 ? path.resolve(rest[outIdx + 1]) : path.resolve('graph.json');
+    if (!rest[0]) {
+      console.error('Usage: nirman graph-json <entry-file> [--out <file>]');
+      process.exit(1);
+    }
+    const graph = buildGraph(entry);
+    const root = path.dirname(entry);
+    const short = (p: string) => path.relative(root, p).split(path.sep).join('/');
+
+    const cycleSet = new Set<string>();
+    for (const cycle of graph.cycles) for (const id of cycle) cycleSet.add(id);
+
+    const nodes = graph.discoveryOrder.map((id) => {
+      const node = graph.modules.get(id)!;
+      return { id: short(id), kind: node.kind, inCycle: cycleSet.has(id), isEntry: id === graph.entry };
+    });
+    const edges: { from: string; to: string; specifier: string }[] = [];
+    for (const id of graph.discoveryOrder) {
+      const node = graph.modules.get(id)!;
+      for (const dep of node.dependencies) {
+        edges.push({ from: short(id), to: short(dep.resolved), specifier: dep.specifier });
+      }
+    }
+    const cycles = graph.cycles.map((c) => [...c].map(short));
+
+    fs.mkdirSync(path.dirname(outFile), { recursive: true });
+    fs.writeFileSync(outFile, JSON.stringify({ entry: short(graph.entry), nodes, edges, cycles }, null, 2));
+    console.log(`Wrote graph JSON (${nodes.length} nodes, ${edges.length} edges, ${cycles.length} cycles) -> ${outFile}`);
+    return;
+  }
+
   if (cmd === 'build') {
     const entry = path.resolve(rest[0] ?? '');
     const outIdx = rest.indexOf('--out');
@@ -78,7 +112,7 @@ function main(): void {
     return;
   }
 
-  console.error('Usage: nirman <graph|build|dev> <entry-file> [options]');
+  console.error('Usage: nirman <graph|graph-json|build|dev> <entry-file> [options]');
   process.exit(1);
 }
 
