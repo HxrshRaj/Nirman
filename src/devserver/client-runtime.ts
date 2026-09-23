@@ -16,6 +16,9 @@
  */
 export function devRuntimeHeader(): string {
   return `(function () {
+  if (typeof process === 'undefined') {
+    var process = { env: { NODE_ENV: 'development' } };
+  }
   var __nirman_modules = {};
   var __nirman_cache = {};
   var __nirman_dependents = {}; // depId -> { callerId: true, ... }

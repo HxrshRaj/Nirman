@@ -13,7 +13,7 @@ const JSXParser = acorn.Parser.extend(jsx());
  * shape so the walk can safely pass through JSX subtrees on its way to any
  * import/require calls nested inside them (e.g. inside a `{expr}` child).
  */
-const jsxWalkBase: Record<string, (node: any, st: any, c: any) => void> = {
+export const jsxWalkBase: Record<string, (node: any, st: any, c: any) => void> = {
   ...(walk.base as any),
   JSXElement(node: any, st, c) {
     c(node.openingElement, st, 'JSXOpeningElement');

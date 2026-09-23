@@ -12,6 +12,13 @@
  */
 export function runtimeHeader(): string {
   return `(function () {
+  // Minimal process.env shim: several real npm packages (React among them) branch on
+  // process.env.NODE_ENV in their CJS entry point even when bundled for the browser,
+  // where no such global exists. Real bundlers (webpack's DefinePlugin, Vite) solve
+  // this the same way -- substituting a plain constant for it.
+  if (typeof process === 'undefined') {
+    var process = { env: { NODE_ENV: 'production' } };
+  }
   var __nirman_modules = {};
   var __nirman_cache = {};
 

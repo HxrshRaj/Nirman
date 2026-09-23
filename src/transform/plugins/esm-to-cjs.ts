@@ -1,6 +1,8 @@
 import * as acorn from 'acorn';
 import MagicString from 'magic-string';
+import * as walk from 'acorn-walk';
 import { JsPlugin, TransformContext } from '../types';
+import { jsxWalkBase } from '../../resolver/parse-imports';
 
 function collectPatternNames(pattern: any, out: string[]): void {
   switch (pattern.type) {
@@ -149,5 +151,30 @@ export const esmToCjsPlugin: JsPlugin = {
     if (usesEsm) {
       s.prepend(`Object.defineProperty(exports, "__esModule", { value: true });\n`);
     }
+
+    // Plain CommonJS `require('./x')` calls -- e.g. inside third-party CJS packages
+    // like React's own entry point, which branch on process.env.NODE_ENV with two
+    // separate require() calls -- are NOT part of any import/export statement above,
+    // so they need their own pass: rewrite the string argument to the resolved id,
+    // anywhere in the file, not just at the top level.
+    const isJsx = ctx.kind === 'jsx' || ctx.kind === 'tsx';
+    walk.simple(
+      ast,
+      {
+        CallExpression(node: any) {
+          if (
+            node.callee?.type === 'Identifier' &&
+            node.callee.name === 'require' &&
+            node.arguments.length === 1 &&
+            node.arguments[0].type === 'Literal' &&
+            typeof node.arguments[0].value === 'string'
+          ) {
+            const resolved = ctx.resolve(node.arguments[0].start);
+            s.overwrite(node.arguments[0].start, node.arguments[0].end, JSON.stringify(resolved));
+          }
+        },
+      },
+      isJsx ? jsxWalkBase : undefined
+    );
   },
 };

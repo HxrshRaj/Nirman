@@ -1,0 +1,72 @@
+body {
+  margin: 0;
+  font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+  background: #f4f6f8;
+  color: #1a1a1a;
+}
+
+.app {
+  max-width: 480px;
+  margin: 40px auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.app-header {
+  background: #2c6e49;
+  color: white;
+  padding: 20px 24px;
+}
+
+.app-header h1 {
+  margin: 0 0 4px;
+  font-size: 20px;
+}
+
+.app-header p {
+  margin: 0;
+  opacity: 0.85;
+  font-size: 14px;
+}
+
+.task-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+}
+
+.task {
+  padding: 12px 24px;
+  border-bottom: 1px solid #eee;
+}
+
+.task label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.task-done span {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.loading,
+.empty {
+  padding: 24px;
+  color: #666;
+}
+
+.app-footer {
+  padding: 16px 24px;
+  font-size: 12px;
+  color: #888;
+  border-top: 1px solid #eee;
+}
+
+.app-footer a {
+  color: #2c6e49;
+}
