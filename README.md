@@ -5,8 +5,9 @@ replacement — built from scratch in TypeScript. No `esbuild`/`webpack`/`rollup
 hood: the dependency resolution, module transformation, bundling, module runtime, and HMR
 client are all Nirman's own code.
 
-**Live demo:** _link once deployed — see "Status" below_
-**Dependency graph visualizer:** _link once deployed — see "Status" below_
+**Live demo:** https://hxrshraj.github.io/Nirman/
+**Dependency graph visualizer:** https://hxrshraj.github.io/Nirman/graph/
+**Repo:** https://github.com/HxrshRaj/Nirman
 
 ## Why this exists
 
@@ -84,6 +85,20 @@ node dist/cli/index.js dev demo-app/src/index.jsx --port 4322
 # open http://localhost:4322, then edit any file under demo-app/src
 ```
 
+## Deployment
+
+The live demo and visualizer are `demo-app/dist/` (built by `nirman build` +
+`nirman graph-json`, exactly as shown above) pushed to the repo's `gh-pages` branch and
+served by GitHub Pages. To redeploy after a change:
+
+```bash
+node dist/cli/index.js build demo-app/src/index.jsx --out demo-app/dist/bundle.js
+cp demo-app/src/index.html demo-app/dist/index.html
+node dist/cli/index.js graph-json demo-app/src/index.jsx --out demo-app/dist/graph/graph.json
+cp visualizer/index.html demo-app/dist/graph/index.html
+# then commit demo-app/dist/* to the gh-pages branch and push
+```
+
 ## What's real here (and how it was verified, not just claimed)
 
 | Part | What it does | How it was verified |
@@ -133,6 +148,4 @@ node dist/cli/index.js dev demo-app/src/index.jsx --port 4322
 - [x] Part 4 — dev server + real HMR
 - [x] Part 5 — demo app dogfooded with Nirman
 - [x] Part 6 — dependency graph visualizer
-- [ ] Live deployment of the demo app + visualizer, and the public GitHub repo link —
-  pending GitHub/hosting authentication (see the final summary in this session for what's
-  needed to finish this step).
+- [x] Live deployment (GitHub Pages, `gh-pages` branch) + public GitHub repo
