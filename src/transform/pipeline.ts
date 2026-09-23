@@ -21,19 +21,32 @@ function parsableSourceFor(node: ModuleNode): string {
   return node.source;
 }
 
+export type IdResolver = (absolutePath: string) => string;
+
+const identityId: IdResolver = (p) => p;
+
 /**
- * Transform a single module: run every applicable plugin against a shared MagicString
- * built from the module's parsable source, then generate a real v3 source map from the
- * accumulated edits. `.css` and `.json` take separate, simpler code paths since they
- * have no JS AST of their own.
+ * Runs the plugin pipeline for a single module and returns the live MagicString
+ * instance (not just a rendered string). Bundling many modules together uses
+ * MagicString's own `Bundle` to combine these into a single accurate source map
+ * instead of hand-stitching separately-generated per-module maps.
+ *
+ * `idFor` lets the caller control what a `require(...)` call inside the module resolves
+ * to: standalone single-module use (transformModule, below) leaves it as the absolute
+ * path; the real bundler (bundle/bundle.ts) passes short, stable per-file ids so the
+ * emitted bundle doesn't leak local filesystem paths.
  */
-export function transformModule(node: ModuleNode, plugins: JsPlugin[] = DEFAULT_PLUGINS): TransformOutput {
+export function transformModuleToMagicString(
+  node: ModuleNode,
+  plugins: JsPlugin[] = DEFAULT_PLUGINS,
+  idFor: IdResolver = identityId
+): MagicString {
   if (node.kind === 'css') {
-    return transformCss(node);
+    return new MagicString(transformCss(node).code, { filename: node.id });
   }
 
   if (node.kind === 'json') {
-    return { code: `module.exports = ${node.source};\n`, map: null };
+    return new MagicString(`module.exports = ${node.source};\n`, { filename: node.id });
   }
 
   const source = parsableSourceFor(node);
@@ -60,7 +73,7 @@ export function transformModule(node: ModuleNode, plugins: JsPlugin[] = DEFAULT_
       if (!resolved) {
         throw new Error(`No resolved dependency recorded for specifier at offset ${specifierStart} in ${node.id}`);
       }
-      return resolved;
+      return idFor(resolved);
     },
   };
 
@@ -70,11 +83,21 @@ export function transformModule(node: ModuleNode, plugins: JsPlugin[] = DEFAULT_
     }
   }
 
-  const map = s.generateMap({
-    source: node.id,
-    includeContent: true,
-    hires: true,
-  });
+  return s;
+}
+
+/**
+ * Transform a single module in isolation and render it to a standalone {code, map}
+ * pair. Used for direct, single-file verification (see scripts/test-transform.js);
+ * the real bundler uses transformModuleToMagicString directly so it can combine many
+ * modules' maps into one via MagicString's Bundle.
+ */
+export function transformModule(node: ModuleNode, plugins: JsPlugin[] = DEFAULT_PLUGINS): TransformOutput {
+  if (node.kind === 'css') return transformCss(node);
+  if (node.kind === 'json') return { code: `module.exports = ${node.source};\n`, map: null };
+
+  const s = transformModuleToMagicString(node, plugins);
+  const map = s.generateMap({ source: node.id, includeContent: true, hires: true });
 
   return {
     code: s.toString(),

@@ -9,8 +9,9 @@ export async function renderApp() {
   const footer = renderFooter(2026);
 
   const lines = [];
-  subscribe((data) => lines.push(`loaded ${data.key}`));
+  subscribe((data) => lines.push(`loaded ${data.key} (cachedWithVersion=${data.cachedWithVersion})`));
   await loadInto('boot');
+  await loadInto('boot'); // second call, same key -> exercises the cache HIT path
   await loadRoute('home');
 
   return [header, nav, ...lines, footer].join('\n');
