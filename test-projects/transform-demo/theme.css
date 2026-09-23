@@ -1,0 +1,10 @@
+.greeting {
+  font-family: sans-serif;
+  color: #222;
+}
+
+.badge {
+  background: #ffcc00;
+  border-radius: 4px;
+  padding: 2px 6px;
+}

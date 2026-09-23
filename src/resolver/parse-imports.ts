@@ -6,6 +6,56 @@ import { RawImport, ModuleKind } from './types';
 const JSXParser = acorn.Parser.extend(jsx());
 
 /**
+ * acorn-walk's default `base` visitor set has no entries for JSX node types (they come
+ * from the acorn-jsx extension, not core ESTree), so a plain `walk.simple` throws
+ * "No walker function defined for node type JSXElement" the moment it needs to recurse
+ * into one. This extends the default base with real recursion rules for every JSX node
+ * shape so the walk can safely pass through JSX subtrees on its way to any
+ * import/require calls nested inside them (e.g. inside a `{expr}` child).
+ */
+const jsxWalkBase: Record<string, (node: any, st: any, c: any) => void> = {
+  ...(walk.base as any),
+  JSXElement(node: any, st, c) {
+    c(node.openingElement, st, 'JSXOpeningElement');
+    for (const child of node.children) c(child, st);
+    if (node.closingElement) c(node.closingElement, st, 'JSXClosingElement');
+  },
+  JSXFragment(node: any, st, c) {
+    for (const child of node.children) c(child, st);
+  },
+  JSXOpeningElement(node: any, st, c) {
+    c(node.name, st);
+    for (const attr of node.attributes) c(attr, st);
+  },
+  JSXClosingElement(node: any, st, c) {
+    c(node.name, st);
+  },
+  JSXAttribute(node: any, st, c) {
+    c(node.name, st);
+    if (node.value) c(node.value, st);
+  },
+  JSXSpreadAttribute(node: any, st, c) {
+    c(node.argument, st);
+  },
+  JSXExpressionContainer(node: any, st, c) {
+    c(node.expression, st);
+  },
+  JSXMemberExpression(node: any, st, c) {
+    c(node.object, st);
+    c(node.property, st);
+  },
+  JSXNamespacedName(node: any, st, c) {
+    c(node.namespace, st);
+    c(node.name, st);
+  },
+  JSXIdentifier() {},
+  JSXText() {},
+  JSXEmptyExpression() {},
+  JSXOpeningFragment() {},
+  JSXClosingFragment() {},
+};
+
+/**
  * Parse a module's source with a real parser (acorn, extended with JSX) and walk the
  * resulting AST to find every static `import`, `export ... from`, dynamic `import()`,
  * and CommonJS `require()` call. We deliberately do NOT regex-match import statements:
@@ -93,7 +143,7 @@ export function parseImports(source: string, kind: ModuleKind): RawImport[] {
         });
       }
     },
-  });
+  }, isJsx ? jsxWalkBase : undefined);
 
   // Sort by source position so downstream consumers see them in document order.
   found.sort((a, b) => a.start - b.start);
